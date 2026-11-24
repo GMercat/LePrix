@@ -204,6 +204,22 @@ def main():
     out = list(G.PRINTS.values())[n0:]
     assert any("2 ligne(s)" in l for l in out) and any("calculé" in l for l in out), out
     fire("AUCTION_HOUSE_CLOSED")
+    # Réouverture de l'HV : tout le cache est rafraîchi, surveillance d'abord
+    n0 = len(G.SENT)
+    fire("AUCTION_HOUSE_SHOW")
+    for _ in range(20):
+        if ns.QueueSize() == 0: break
+        G.TIMERS[len(G.TIMERS)].fn()
+    sent = list(G.SENT.values())[n0:]
+    assert sent[0] == 4306 and {2772, 15211} <= set(sent) and len(sent) == len(set(sent)), sent
+    # Bouton Actualiser sans fermer : même chose
+    n0 = len(G.SENT)
+    ns.QueueRefreshAll()
+    for _ in range(20):
+        if ns.QueueSize() == 0: break
+        G.TIMERS[len(G.TIMERS)].fn()
+    assert {4306, 2772, 15211} <= set(list(G.SENT.values())[n0:])
+    fire("AUCTION_HOUSE_CLOSED")
     G.SlashCmdList.LEPRIX("debug")
     print("\n".join(list(G.PRINTS.values())[-6:]))
     print("OK : tous les scénarios passent")

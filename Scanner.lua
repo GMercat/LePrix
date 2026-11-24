@@ -166,6 +166,30 @@ function ns.QueueAllChars()
   ns.RefreshPanel()
 end
 
+-- Rafraîchissement complet (ouverture de l'HV et bouton « Actualiser ») ----------
+-- Ordre : liste de surveillance, sacs, puis le reste du cache du plus ancien au plus récent.
+function ns.QueueRefreshAll()
+  ns.QueueWatch()
+  ns.QueueBags(true)
+  local known = ns.AllCharItems() -- donne niveau et suffixe pour l'équipement des persos
+  local list = {}
+  for k, p in pairs(ns.market.prices) do
+    local id = tonumber(k:match("^(%d+)"))
+    if id then list[#list + 1] = { id = id, k = k, t = p.t or 0 } end
+  end
+  table.sort(list, function(a, b) return a.t < b.t end)
+  for _, x in ipairs(list) do
+    local e = known[x.k]
+    local key
+    if e and e.equip then
+      key = C_AuctionHouse.MakeItemKey(e.id, e.level or 0, e.suffix or 0)
+    end
+    ns.Enqueue(x.id, key) -- dédoublonné par itemID
+  end
+  ns.Print("%d recherche(s) en file", ns.QueueSize())
+  ns.RefreshPanel()
+end
+
 -- Ouverture / fermeture de l'HV ----------------------------------------------
 ns.On("AUCTION_HOUSE_SHOW", function()
   if not (C_AuctionHouse and C_AuctionHouse.SendSearchQuery) then
@@ -175,8 +199,7 @@ ns.On("AUCTION_HOUSE_SHOW", function()
   -- Un tick plus tard : l'interface de l'HV de Blizzard est alors chargée et affichée.
   C_Timer.After(0, function()
     ns.ShowPanel()
-    ns.QueueWatch()
-    ns.QueueBags(false)
+    ns.QueueRefreshAll()
   end)
 end)
 

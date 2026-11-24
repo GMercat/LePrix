@@ -5,7 +5,7 @@ Addon pour **World of Warcraft: Forever** qui affiche dans les infobulles le pri
 ## Fonctionnalités
 
 - **Prix dans les infobulles** : valeur nette (moins 5 % de commission) et prix pour vendre maintenant (prix le plus bas moins 1 cuivre, net), calculés pour toute la pile survolée, plus la valeur nette d'une unité quand la pile en contient plusieurs. L'âge du relevé est affiché en dessous.
-- **Scan automatique des sacs** à l'ouverture de l'HV. Seuls les objets vendables sont recherchés, et ceux relevés il y a moins de 15 minutes sont ignorés.
+- **Rafraîchissement complet** à l'ouverture de l'HV et avec le bouton « Actualiser » : liste de surveillance, puis objets vendables des sacs, puis tout le reste du cache, du relevé le plus ancien au plus récent. Fermer l'HV arrête la file.
 - **Cache des prix** partagé entre tous les personnages du compte de jeu, séparé par région et faction.
 - **Liste de surveillance** dans un panneau à droite de l'HV : glisse un objet dedans pour l'ajouter. Le panneau affiche la valeur, l'évolution depuis le relevé précédent et la date.
 - **Bouton « Mes persos »** : scanne les objets (sacs et banque) de tous tes personnages de la faction, tels qu'enregistrés à leur dernière connexion.
