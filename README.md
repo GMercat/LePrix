@@ -28,7 +28,7 @@ git clone https://github.com/GMercat/LePrix.git LePrix
 
 Pour mettre à jour : `git pull` dans ce dossier, puis `/reload` en jeu.
 
-Si l'addon apparaît comme « périmé », remplace la valeur `## Interface` de `LePrix.toc` par le résultat de `/dump (select(4, GetBuildInfo()))`.
+Si l'addon apparaît comme « périmé » ou « incompatible » après un patch, remplace la valeur `## Interface` de `LePrix.toc` (16001 pour le client 1.60.1) par le résultat de `/run print(select(4, GetBuildInfo()))`.
 
 ## Commandes
 

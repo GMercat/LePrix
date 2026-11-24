@@ -1,9 +1,9 @@
-# Remplace la valeur ci-dessous par le résultat de : /dump (select(4, GetBuildInfo()))
-## Interface: 11508
+# Interface de WoW Forever (client 1.60.1). Après un patch, vérifier avec : /run print(select(4, GetBuildInfo()))
+## Interface: 16001
 ## Title: Le Prix
 ## Notes: Prix de l'HV (net de commission) dans les infobulles, cache des derniers prix et liste de surveillance.
 ## Author: Guillaume
-## Version: 0.2.0
+## Version: 0.2.1
 ## SavedVariables: LePrixDB
 
 Core.lua
