@@ -75,7 +75,8 @@ C_Item = { GetItemID = function(loc) return BAG[loc.slot] end,
            GetItemQuality = function(loc) return loc.slot == 4 and 0 or 2 end,
            GetItemInfoInstant = function(id) if id == 15211 then return id, "", "", "INVTYPE_WEAPON", 1, 2 end return id, "", "", "", 1, 7 end,
            GetItemLink = function(loc) if BAG[loc.slot] == 15211 then return "|Hitem:15211:0:0:0:0:0:1047:0|h" end return "|Hitem:"..BAG[loc.slot].."::::::::|h" end,
-           GetStackCount = function(loc) return 5 end,
+           GetStackCount = function(loc) return loc.stack or 5 end,
+           GetItemLocation = function(guid) local n = tonumber(guid:match("%d+")); return { stack = n, IsValid = function() return true end } end,
            GetCurrentItemLevel = function() return 30 end, GetItemIconByID = function() return 1 end,
            GetItemInfo = function(id) return "Objet"..id, nil, 2, nil,nil,nil,nil,nil,nil, 1 end }
 
@@ -150,6 +151,18 @@ def main():
     lines = list(G.TT_LINES.values())
     assert lines[0] == f"HV valeur nette = {int(7000*0.95)}c", lines
     assert lines[1] == f"HV vendre à (net) = {int(4999*0.95)}c", lines
+    # Pile de 20 minerais survolée dans les sacs (GUID connu)
+    G.TT_LINES = lua.table(); G.CURRENT_LINK = "|Hitem:2772::::::::|h"
+    G.POSTCALL(G.GameTooltip, lua.eval('{ guid = "Item-20" }'))
+    lines = list(G.TT_LINES.values())
+    assert lines[0] == f"HV valeur nette x20 = {int(125*20*0.95)}c", lines
+    assert lines[1] == f"HV vendre à (net) x20 = {int(99*20*0.95)}c", lines
+    assert lines[2] == f"HV valeur nette x1 = {int(125*0.95)}c", lines
+    # Lien de chat (pas de GUID) -> prix unitaire seulement, pas de ligne x1
+    G.TT_LINES = lua.table()
+    G.POSTCALL(G.GameTooltip, None)
+    lines = list(G.TT_LINES.values())
+    assert lines[0] == f"HV valeur nette = {int(125*0.95)}c" and not any("x1" in l for l in lines), lines
     # Suffixe jamais vu -> repli sur l'agrégat
     G.TT_LINES = lua.table(); G.CURRENT_LINK = "|Hitem:15211:0:0:0:0:0:999:0|h"
     G.POSTCALL(G.GameTooltip, None)
