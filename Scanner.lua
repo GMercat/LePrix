@@ -121,7 +121,7 @@ local GetNumSlots = (C_Container and C_Container.GetContainerNumSlots) or GetCon
 
 function ns.QueueBags(force)
   local ah, seen, now, added = C_AuctionHouse, {}, time(), 0
-  for bag = 0, NUM_BAG_SLOTS or 4 do
+  for _, bag in ipairs(ns.BagContainers()) do
     for slot = 1, GetNumSlots(bag) or 0 do
       local loc = ItemLocation:CreateFromBagAndSlot(bag, slot)
       if loc:IsValid() then

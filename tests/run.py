@@ -25,7 +25,7 @@ function GetCursorInfo() return nil end
 function ClearCursor() end
 NUM_BAG_SLOTS = 0
 SlashCmdList = {}
-Enum = { AuctionHouseSortOrder = { Price = 0 }, TooltipDataType = { Item = 0 } }
+Enum = { AuctionHouseSortOrder = { Price = 0 }, TooltipDataType = { Item = 0 }, BagIndex = { ReagentBag = 5 } }
 
 local function newFrame()
   local f = { scripts = {}, shown = true }
@@ -64,10 +64,10 @@ GameTooltip.GetItem = function() return "x", CURRENT_LINK end
 AuctionHouseFrame = newFrame()
 
 -- Sacs : un minerai (commodité, id 2772) et une épée avec suffixe (id 15211, suffixe 1047)
-C_Container = { GetContainerNumSlots = function(bag) return bag == 0 and 4 or 0 end }
-BAG = { [1] = 2772, [2] = 15211, [3] = 9999, [4] = 8888 }
+C_Container = { GetContainerNumSlots = function(bag) if bag == 0 then return 4 elseif bag == 5 then return 1 end return 0 end }
+BAG = { [1] = 2772, [2] = 15211, [3] = 9999, [4] = 8888, [501] = 2589 }
 ItemLocation = { CreateFromBagAndSlot = function(_, bag, slot)
-  return { slot = slot, IsValid = function(s) return BAG[s.slot] ~= nil end } end }
+  return { slot = bag * 100 + slot, IsValid = function(s) return BAG[s.slot] ~= nil end } end }
 function UnitName() return "Alpha" end
 BOUND = { [3] = true }
 C_Item = { GetItemID = function(loc) return BAG[loc.slot] end,
@@ -86,7 +86,7 @@ C_AuctionHouse = {
   IsThrottledMessageSystemReady = function() return THROTTLE_READY end,
   MakeItemKey = function(id, lvl, suf) MK = { id, lvl, suf }; return { itemID = id } end,
   GetItemKeyFromItem = function(loc) return { itemID = BAG[loc.slot] } end,
-  IsSellItemValid = function(loc) return loc.slot <= 2 end,
+  IsSellItemValid = function(loc) return loc.slot <= 2 or loc.slot > 500 end,
   SendSearchQuery = function(key) SENT[#SENT+1] = key.itemID end,
   GetNumCommoditySearchResults = function() return #COMM end,
   GetCommoditySearchResultInfo = function(_, i) return COMM[i] end,
@@ -122,6 +122,7 @@ def main():
     assert sent == [2772], f"une seule recherche en vol attendue, eu {sent}"
     fire("COMMODITY_SEARCH_RESULTS_UPDATED", 2772)
     assert list(G.SENT.values()) == [2772, 15211], list(G.SENT.values())
+    assert ns.QueueSize() == 2, ns.QueueSize()  # 15211 en vol + 2589 (sac de composants) en file
     # Throttle : la file attend le signal
     G.THROTTLE_READY = False
     key = lua.eval("{ itemID = 15211 }")
@@ -142,6 +143,8 @@ def main():
     fire("AUCTION_HOUSE_THROTTLED_SYSTEM_READY")
     assert list(G.SENT.values())[-1] == 4306
     # Pas de réponse -> timeout -> on libère la file
+    G.TIMERS[len(G.TIMERS)].fn()
+    assert list(G.SENT.values())[-1] == 2589  # le sac de composants passe ensuite
     G.TIMERS[len(G.TIMERS)].fn()
     assert ns.QueueSize() == 0
 
@@ -179,7 +182,7 @@ def main():
     # Inventaire : Alpha (perso courant) filtré, + Beta enregistré lors d'une session précédente
     alpha = ns.market.chars["Alpha"].bags
     keys = sorted(alpha.keys())
-    assert keys == ["15211:1047", "2772"], keys
+    assert keys == ["15211:1047", "2589", "2772"], keys
     assert alpha["2772"].count == 5 and alpha["15211:1047"].equip and alpha["15211:1047"].level == 30
     beta = lua.eval('{ bags = { ["2589"] = { id = 2589, suffix = 0, count = 20 } }, bank = { ["14047"] = { id = 14047, suffix = 0, count = 3 }, ["2772"] = { id = 2772, suffix = 0, count = 2 } }, bagsT = 1 }')
     ns.market.chars["Beta"] = beta

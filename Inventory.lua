@@ -6,23 +6,35 @@ local _, ns = ...
 local GetNumSlots = (C_Container and C_Container.GetContainerNumSlots) or GetContainerNumSlots
 local QUEST_CLASS = (Enum.ItemClass and Enum.ItemClass.Questitem) or 12
 
-local function BagContainers()
+-- Sacs portés + sac de composants. Partagé avec le scan à l'HV (Scanner.lua).
+function ns.BagContainers()
   local list = {}
-  for bag = 0, (NUM_BAG_SLOTS or 4) + (NUM_REAGENTBAG_SLOTS or 0) do list[#list + 1] = bag end
+  for bag = 0, NUM_BAG_SLOTS or 4 do list[#list + 1] = bag end
+  local B = Enum.BagIndex
+  if B and B.ReagentBag then
+    list[#list + 1] = B.ReagentBag
+  else
+    for n = 1, NUM_REAGENTBAG_SLOTS or 0 do list[#list + 1] = (NUM_BAG_SLOTS or 4) + n end
+  end
   return list
 end
+local BagContainers = ns.BagContainers
 
 local function BankContainers()
   local B = Enum.BagIndex
-  if B and B.Bank and B.BankBag_1 then
-    local list = { B.Bank }
-    for i = 1, 7 do
-      if B["BankBag_" .. i] then list[#list + 1] = B["BankBag_" .. i] end
+  local list = {}
+  if B and B.Bank then list[#list + 1] = B.Bank end
+  -- Banque à sacs (classique) ou à onglets (moderne) : on prend ce que le client expose.
+  for _, prefix in ipairs({ "BankBag_", "CharacterBankTab_" }) do
+    for i = 1, 12 do
+      local v = B and B[prefix .. i]
+      if v then list[#list + 1] = v end
     end
-    return list
   end
-  local list = { BANK_CONTAINER or -1 }
-  local first = (NUM_BAG_SLOTS or 4) + 1
+  if #list > 0 then return list end
+  -- Repli sans Enum.BagIndex : la banque commence après les sacs et le sac de composants.
+  list = { BANK_CONTAINER or -1 }
+  local first = (NUM_BAG_SLOTS or 4) + (NUM_REAGENTBAG_SLOTS or 0) + 1
   for bag = first, first + (NUM_BANKBAGSLOTS or 7) - 1 do list[#list + 1] = bag end
   return list
 end
