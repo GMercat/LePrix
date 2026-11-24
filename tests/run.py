@@ -43,7 +43,13 @@ local function newFrame()
   return f
 end
 REG = {}
-function CreateFrame() local f = newFrame(); FRAMES = FRAMES or {}; FRAMES[#FRAMES+1]=f; return f end
+function CreateFrame(_, _, _, template)
+  local f = newFrame(); FRAMES = FRAMES or {}; FRAMES[#FRAMES+1]=f
+  if template == "ButtonFrameTemplate" then
+    f.CloseButton = newFrame(); f.Inset = newFrame(); f.TitleText = newFrame(); f.templated = true
+  end
+  return f
+end
 function Fire(e, ...) for _, f in pairs(FRAMES) do if f.scripts.OnEvent then f.scripts.OnEvent(f, e, ...) end end end
 
 TIMERS = {}
