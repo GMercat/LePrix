@@ -36,6 +36,7 @@ Si l'addon apparaît comme « périmé » ou « incompatible » après un patch,
 |---|---|
 | `/lp add [lien]` · `/lp del [lien]` | Ajoute ou retire un objet de la liste de surveillance |
 | `/lp scan` | Force le scan des sacs (HV ouvert) |
+| `/lp prix [lien]` | Affiche le prix en cache et, HV ouvert, relance la recherche en montrant les résultats bruts |
 | `/lp persos` | Liste les personnages enregistrés et la date de leurs sacs et banque |
 | `/lp oublier Nom` | Retire un personnage |
 | `/lp reset` | Vide le cache des prix du marché courant |

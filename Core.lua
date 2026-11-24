@@ -125,6 +125,23 @@ SlashCmdList.LEPRIX = function(msg)
   elseif cmd == "scan" then
     if not ns.ahOpen then return ns.Print("ouvre l'HV d'abord") end
     ns.QueueBags(true)
+  elseif cmd == "prix" then
+    local id = ns.ParseLink(rest) or tonumber(rest)
+    if not id then return ns.Print("usage : /lp prix [lien d'objet ou itemID]") end
+    local p = ns.market.prices[tostring(id)]
+    if p and p.t then
+      ns.Print("en cache : plus bas %s, moyenne %s sur %d, relevé il y a %s",
+        p.low and ns.Money(p.low) or "-", p.avg and ns.Money(p.avg) or "-", p.n or 0, ns.Ago(p.t))
+    else
+      ns.Print("rien en cache pour %d", id)
+    end
+    if ns.ahOpen then
+      ns.verbose[id] = true
+      ns.Enqueue(id, nil, true)
+      ns.Print("nouvelle recherche lancée…")
+    else
+      ns.Print("ouvre l'HV pour relancer une recherche détaillée")
+    end
   elseif cmd == "persos" then
     ns.ListChars()
   elseif cmd == "oublier" then
@@ -136,6 +153,6 @@ SlashCmdList.LEPRIX = function(msg)
   elseif cmd == "debug" then
     ns.Debug()
   else
-    ns.Print("/lp add|del [lien] · /lp scan (force le scan des sacs) · /lp persos · /lp oublier Nom · /lp reset · /lp debug")
+    ns.Print("/lp add|del [lien] · /lp scan (force le scan des sacs) · /lp prix [lien] · /lp persos · /lp oublier Nom · /lp reset · /lp debug")
   end
 end

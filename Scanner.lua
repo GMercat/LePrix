@@ -2,6 +2,23 @@ local _, ns = ...
 
 -- File de recherches, envoyées une par une au rythme autorisé par le serveur.
 local queue, queued = {}, {}
+ns.verbose = {} -- itemID -> true : afficher les résultats bruts de la prochaine recherche (/lp prix)
+
+local function Raw(id, fmt, ...)
+  if ns.verbose[id] then ns.Print(fmt, ...) end
+end
+
+local function Report(id, key)
+  if not ns.verbose[id] then return end
+  ns.verbose[id] = nil
+  local p = ns.market.prices[key]
+  if p and p.avg then
+    ns.Print("→ calculé : plus bas %s, moyenne %s sur %d, net x1 %s",
+      ns.Money(p.low), ns.Money(p.avg), p.n or 0, ns.Money(ns.Net(p.avg)))
+  else
+    ns.Print("→ aucune annonce exploitable")
+  end
+end
 local pending, timer
 
 local SORT = { { sortOrder = Enum.AuctionHouseSortOrder and Enum.AuctionHouseSortOrder.Price or 0, reverseSort = false } }
@@ -51,14 +68,21 @@ ns.On("AUCTION_HOUSE_THROTTLED_SYSTEM_READY", function() ns.Pump() end)
 ns.On("COMMODITY_SEARCH_RESULTS_UPDATED", function(itemID)
   if itemID ~= pending then return end
   local ah, list = C_AuctionHouse, {}
-  for i = 1, ah.GetNumCommoditySearchResults(itemID) or 0 do
+  local total = ah.GetNumCommoditySearchResults(itemID) or 0
+  Raw(itemID, "marchandise %d : %d ligne(s) reçue(s), complet = %s", itemID, total,
+    tostring(ah.HasFullCommoditySearchResults and ah.HasFullCommoditySearchResults(itemID)))
+  for i = 1, total do
     local r = ah.GetCommoditySearchResultInfo(itemID, i)
+    if r and i <= 8 then
+      Raw(itemID, "  #%d %s x%d (dont à moi : %d)", i, ns.Money(r.unitPrice), r.quantity, r.numOwnerItems or 0)
+    end
     if r then
       local qty = r.quantity - (r.numOwnerItems or 0) -- on ignore nos propres annonces
       if qty > 0 then list[#list + 1] = { price = r.unitPrice, qty = qty } end
     end
   end
   ns.Store(tostring(itemID), ns.Commodity(list))
+  Report(itemID, tostring(itemID))
   Done(itemID)
 end)
 
@@ -67,8 +91,13 @@ ns.On("ITEM_SEARCH_RESULTS_UPDATED", function(itemKey)
   if not itemKey or itemKey.itemID ~= pending then return end
   local ah, id = C_AuctionHouse, itemKey.itemID
   local groups, all = {}, {}
-  for i = 1, ah.GetNumItemSearchResults(itemKey) or 0 do
+  local total = ah.GetNumItemSearchResults(itemKey) or 0
+  Raw(id, "objet %d : %d annonce(s) reçue(s)", id, total)
+  for i = 1, total do
     local r = ah.GetItemSearchResultInfo(itemKey, i)
+    if r and i <= 8 then
+      Raw(id, "  #%d %s x%d %s", i, ns.Money(r.buyoutAmount or 0), r.quantity or 1, r.containsOwnerItem and "(à moi)" or "")
+    end
     if r and r.buyoutAmount and not r.containsOwnerItem then
       local unit = math.floor(r.buyoutAmount / math.max(r.quantity or 1, 1))
       local _, suffix = ns.ParseLink(r.itemLink)
@@ -83,6 +112,7 @@ ns.On("ITEM_SEARCH_RESULTS_UPDATED", function(itemKey)
     if k ~= idKey then ns.Store(k, ns.Items(l)) end
   end
   ns.Store(idKey, ns.Items(all)) -- agrégat tous suffixes confondus
+  Report(id, idKey)
   Done(id)
 end)
 

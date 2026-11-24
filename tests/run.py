@@ -197,6 +197,12 @@ def main():
     assert {2589, 14047, 2772, 15211} <= allsent, allsent
     assert 9999 not in allsent and 8888 not in allsent
     G.SlashCmdList.LEPRIX("persos")
+    # /lp prix : relance détaillée
+    n0 = len(G.PRINTS)
+    G.SlashCmdList.LEPRIX("prix 2772")
+    fire("COMMODITY_SEARCH_RESULTS_UPDATED", 2772)
+    out = list(G.PRINTS.values())[n0:]
+    assert any("2 ligne(s)" in l for l in out) and any("calculé" in l for l in out), out
     fire("AUCTION_HOUSE_CLOSED")
     G.SlashCmdList.LEPRIX("debug")
     print("\n".join(list(G.PRINTS.values())[-6:]))
