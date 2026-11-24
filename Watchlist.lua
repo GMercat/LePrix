@@ -49,7 +49,7 @@ end
 local function GetRow(i)
   if rows[i] then return rows[i] end
   local r = CreateFrame("Button", nil, content)
-  r:SetSize(WIDTH - 40, ROW_H)
+  r:SetSize(WIDTH - 44, ROW_H)
   r:SetPoint("TOPLEFT", 0, -(i - 1) * ROW_H)
   r:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
 
@@ -86,32 +86,56 @@ local function GetRow(i)
   return r
 end
 
-function ns.CreatePanel()
-  local parent = AuctionHouseFrame or UIParent
-  panel = CreateFrame("Frame", "LePrixPanel", parent, "BackdropTemplate")
-  panel:SetSize(WIDTH, 420)
-  if AuctionHouseFrame then
-    panel:SetPoint("TOPLEFT", AuctionHouseFrame, "TOPRIGHT", 4, 0)
-  else
-    panel:SetPoint("CENTER")
+-- Cadre au style des fenêtres Blizzard (même modèle que l'HV) ; repli sur un fond simple
+-- si le modèle n'existe pas sur ce client.
+local function NewStyledFrame(parent)
+  local ok, f = pcall(CreateFrame, "Frame", "LePrixPanel", parent, "ButtonFrameTemplate")
+  if ok and f then
+    if ButtonFrameTemplate_HidePortrait then ButtonFrameTemplate_HidePortrait(f) end
+    if f.CloseButton then f.CloseButton:Hide() end -- le panneau suit l'HV
+    if f.SetTitle then
+      f:SetTitle("Surveillance HV")
+    else
+      local t = f.TitleText or (f.TitleContainer and f.TitleContainer.TitleText)
+      if t then t:SetText("Surveillance HV") end
+    end
+    return f, f.Inset or f
   end
-  panel:SetBackdrop({
+  f = CreateFrame("Frame", "LePrixPanel", parent, "BackdropTemplate")
+  f:SetBackdrop({
     bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
     edgeSize = 14, insets = { left = 3, right = 3, top = 3, bottom = 3 },
   })
-  panel:SetBackdropColor(0, 0, 0, 0.85)
-  panel:EnableMouse(true)
-  panel:SetScript("OnReceiveDrag", AddFromCursor)
-  panel:SetScript("OnMouseUp", AddFromCursor)
-
-  local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  title:SetPoint("TOPLEFT", 10, -10)
+  f:SetBackdropColor(0, 0, 0, 0.85)
+  local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  title:SetPoint("TOP", 0, -8)
   title:SetText("Surveillance HV")
+  return f, f
+end
+
+function ns.CreatePanel()
+  local parent = AuctionHouseFrame or UIParent
+  local inset
+  panel, inset = NewStyledFrame(parent)
+  panel:SetWidth(WIDTH)
+  if AuctionHouseFrame then
+    -- Collé à droite de l'HV, sur toute sa hauteur.
+    panel:SetPoint("TOPLEFT", AuctionHouseFrame, "TOPRIGHT", 2, 0)
+    panel:SetPoint("BOTTOMLEFT", AuctionHouseFrame, "BOTTOMRIGHT", 2, 0)
+  else
+    panel:SetSize(WIDTH, 420)
+    panel:SetPoint("CENTER")
+  end
+  for _, f in ipairs({ panel, inset }) do
+    f:EnableMouse(true)
+    f:SetScript("OnReceiveDrag", AddFromCursor)
+    f:SetScript("OnMouseUp", AddFromCursor)
+  end
 
   local refresh = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
   refresh:SetSize(80, 20)
-  refresh:SetPoint("TOPRIGHT", -8, -6)
+  refresh:SetPoint("TOPRIGHT", -10, -30)
   refresh:SetText("Actualiser")
   refresh:SetScript("OnClick", function() ns.QueueRefreshAll() end)
   refresh:SetScript("OnEnter", function(self)
@@ -123,7 +147,7 @@ function ns.CreatePanel()
   refresh:SetScript("OnLeave", GameTooltip_Hide)
 
   local chars = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-  chars:SetSize(90, 20)
+  chars:SetSize(100, 20)
   chars:SetPoint("RIGHT", refresh, "LEFT", -4, 0)
   chars:SetText("Mes persos")
   chars:SetScript("OnClick", function() ns.QueueAllChars() end)
@@ -135,19 +159,22 @@ function ns.CreatePanel()
   end)
   chars:SetScript("OnLeave", GameTooltip_Hide)
 
-  local hint = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-  hint:SetPoint("TOPLEFT", 10, -30)
-  hint:SetText("Glisse un objet ici pour le surveiller")
-
-  local scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
-  scroll:SetPoint("TOPLEFT", 8, -48)
-  scroll:SetPoint("BOTTOMRIGHT", -28, 26)
+  -- Liste dans l'encart, avec un rappel tant qu'elle est vide.
+  local scroll = CreateFrame("ScrollFrame", nil, inset, "UIPanelScrollFrameTemplate")
+  scroll:SetPoint("TOPLEFT", 6, -6)
+  scroll:SetPoint("BOTTOMRIGHT", -26, 6)
+  scroll:SetScript("OnReceiveDrag", AddFromCursor)
   content = CreateFrame("Frame", nil, scroll)
-  content:SetSize(WIDTH - 40, 1)
+  content:SetSize(WIDTH - 44, 1)
   scroll:SetScrollChild(content)
 
+  panel.empty = inset:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+  panel.empty:SetPoint("CENTER")
+  panel.empty:SetWidth(WIDTH - 40)
+  panel.empty:SetText("Glisse un objet ici\npour le surveiller")
+
   status = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-  status:SetPoint("BOTTOMLEFT", 10, 9)
+  status:SetPoint("BOTTOMLEFT", 12, 8)
 end
 
 function ns.RefreshPanel()
@@ -174,6 +201,7 @@ function ns.RefreshPanel()
   end
   for i = #watch + 1, #rows do rows[i]:Hide() end
   content:SetHeight(math.max(1, #watch * ROW_H))
+  panel.empty:SetShown(#watch == 0)
 
   local q = ns.QueueSize()
   status:SetText(q > 0 and string.format("Recherches en attente : %d", q) or "À jour")
