@@ -23,8 +23,6 @@ local function StackCount(data)
   return (ok2 and count and count > 1) and count or 1
 end
 
-local BLUE = { 0.2, 0.8, 1, 1, 1, 1 }
-
 local function AddPrice(tt, link, count)
   if not ns.market then return end
   local id, suffix = ns.ParseLink(link)
@@ -35,13 +33,14 @@ local function AddPrice(tt, link, count)
   count = count or 1
 
   if p.avg then
+    -- Valeur lissée (moyenne des 200 unités / médiane des 5 annonces les moins chères), nette de commission.
     local tag = (not exact and suffix ~= 0) and " (tous suffixes)" or ""
-    local qty = count > 1 and (" x" .. count) or ""
-    -- Commission appliquée sur le total, comme le fait l'HV sur une vente.
-    tt:AddDoubleLine("HV valeur nette" .. qty .. tag, ns.Money(ns.Net(p.avg * count)), unpack(BLUE))
-    tt:AddDoubleLine("HV vendre à (net)" .. qty, ns.Money(ns.Net(math.max(p.low - 1, 1) * count)), unpack(BLUE))
+    local LINE = "|cff33ccffLePrix HV%s%s :|r %s"
     if count > 1 then
-      tt:AddDoubleLine("HV valeur nette x1", ns.Money(ns.Net(p.avg)), unpack(BLUE))
+      tt:AddLine(LINE:format(" x" .. count, tag, ns.Money(ns.Net(p.avg * count))), 1, 1, 1)
+      tt:AddLine(LINE:format(" x1", "", ns.Money(ns.Net(p.avg))), 1, 1, 1)
+    else
+      tt:AddLine(LINE:format("", tag, ns.Money(ns.Net(p.avg))), 1, 1, 1)
     end
   end
   local status = (p.n == 0) and (p.avg and "aucune annonce, dernier prix connu · " or "aucune annonce · ") or ""
