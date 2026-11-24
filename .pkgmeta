@@ -1,0 +1,5 @@
+package-as: LePrix
+
+ignore:
+  - tests
+  - README.md

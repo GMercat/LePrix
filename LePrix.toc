@@ -1,0 +1,14 @@
+# Remplace la valeur ci-dessous par le résultat de : /dump (select(4, GetBuildInfo()))
+## Interface: 11508
+## Title: Le Prix
+## Notes: Prix de l'HV (net de commission) dans les infobulles, cache des derniers prix et liste de surveillance.
+## Author: Guillaume
+## Version: 0.2.0
+## SavedVariables: LePrixDB
+
+Core.lua
+Price.lua
+Scanner.lua
+Inventory.lua
+Tooltip.lua
+Watchlist.lua
