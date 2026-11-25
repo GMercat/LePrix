@@ -4,7 +4,7 @@ Addon pour **World of Warcraft: Forever** qui affiche dans les infobulles le pri
 
 ## Fonctionnalités
 
-- **Prix dans les infobulles** : une ligne « LePrix HV » avec la valeur de marché nette de la commission de 5 %, pour toute la pile survolée, plus le prix d'une unité quand la pile en contient plusieurs. L'âge du relevé est affiché en dessous. Le dépôt n'est pas déduit : il est rendu si l'objet se vend.
+- **Prix dans les infobulles** : une ligne « LePrix HV » avec la valeur de marché nette de la commission de 5 %, pour toute la pile survolée. L'âge du relevé est affiché en dessous. Le dépôt n'est pas déduit : il est rendu si l'objet se vend.
 - **Rafraîchissement complet** à l'ouverture de l'HV et avec le bouton « Actualiser » : liste de surveillance, puis objets vendables des sacs, puis tout le reste du cache, du relevé le plus ancien au plus récent. Fermer l'HV arrête la file.
 - **Cache des prix** partagé entre tous les personnages du compte de jeu, séparé par région et faction.
 - **Liste de surveillance** dans un panneau à droite de l'HV : glisse un objet dedans pour l'ajouter. Le panneau affiche la valeur, l'évolution depuis le relevé précédent et la date.

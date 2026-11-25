@@ -36,12 +36,8 @@ local function AddPrice(tt, link, count)
     -- Valeur lissée (moyenne des 200 unités / médiane des 5 annonces les moins chères), nette de commission.
     local tag = (not exact and suffix ~= 0) and " (tous suffixes)" or ""
     local LINE = "|cff33ccffLePrix HV%s%s :|r %s"
-    if count > 1 then
-      tt:AddLine(LINE:format(" x" .. count, tag, ns.Money(ns.Net(p.avg * count))), 1, 1, 1)
-      tt:AddLine(LINE:format(" x1", "", ns.Money(ns.Net(p.avg))), 1, 1, 1)
-    else
-      tt:AddLine(LINE:format("", tag, ns.Money(ns.Net(p.avg))), 1, 1, 1)
-    end
+    local qty = count > 1 and (" x" .. count) or ""
+    tt:AddLine(LINE:format(qty, tag, ns.Money(ns.Net(p.avg * count))), 1, 1, 1)
   end
   local status = (p.n == 0) and (p.avg and "aucune annonce, dernier prix connu · " or "aucune annonce · ") or ""
   tt:AddLine(GREY .. status .. "relevé il y a " .. ns.Ago(p.t) .. "|r")

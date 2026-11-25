@@ -3,7 +3,7 @@
 ## Title: Le Prix
 ## Notes: Prix de l'HV (net de commission) dans les infobulles, cache des derniers prix et liste de surveillance.
 ## Author: Guillaume
-## Version: 0.5.1
+## Version: 0.5.2
 ## SavedVariables: LePrixDB
 
 Core.lua

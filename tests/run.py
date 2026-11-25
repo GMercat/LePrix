@@ -165,8 +165,7 @@ def main():
     G.POSTCALL(G.GameTooltip, lua.eval('{ guid = "Item-20" }'))
     lines = list(G.TT_LINES.values())
     assert lines[0] == f"LePrix HV x20 : {int(125*20*0.95)}c", lines
-    assert lines[1] == f"LePrix HV x1 : {int(125*0.95)}c", lines
-    assert len(lines) == 3, lines
+    assert len(lines) == 2 and lines[1].startswith("relevé"), lines
     # Lien de chat (pas de GUID) -> prix unitaire seulement, pas de ligne x1
     G.TT_LINES = lua.table()
     G.POSTCALL(G.GameTooltip, None)
