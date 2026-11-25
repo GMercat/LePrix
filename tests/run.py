@@ -164,7 +164,7 @@ def main():
     G.TT_LINES = lua.table(); G.CURRENT_LINK = "|Hitem:2772::::::::|h"
     G.POSTCALL(G.GameTooltip, lua.eval('{ guid = "Item-20" }'))
     lines = list(G.TT_LINES.values())
-    assert lines[0] == f"LePrix HV x20 : {int(125*20*0.95)}c", lines
+    assert lines[0] == f"LePrix HV : {int(125*20*0.95)}c", lines
     assert len(lines) == 2 and lines[1].startswith("relevé"), lines
     # Lien de chat (pas de GUID) -> prix unitaire seulement, pas de ligne x1
     G.TT_LINES = lua.table()
