@@ -129,16 +129,17 @@ function ns.QueueBags(force)
         -- IsSellItemValid écarte d'un coup les objets liés, de quête, invendables...
         if id and not seen[id] and ah.IsSellItemValid(loc, false) then
           seen[id] = true
-          local p = ns.market.prices[tostring(id)]
-          if force or not p or now - p.t > ns.STALE then
+          if force or not ns.IsFresh(id) then
             ns.Enqueue(id, ah.GetItemKeyFromItem(loc))
             added = added + 1
+          else
+            ns.skipped = (ns.skipped or 0) + 1
           end
         end
       end
     end
   end
-  if added > 0 then ns.Print("%d objet(s) des sacs à scanner", added) end
+  return added
 end
 
 -- Scan des objets de tous les personnages (bouton « Mes persos ») ----------------
@@ -147,9 +148,7 @@ function ns.QueueAllChars()
   local prices, now, list = ns.market.prices, time(), {}
   for k, e in pairs(ns.AllCharItems()) do
     local p = prices[k]
-    if not p or now - p.t > ns.STALE then
-      list[#list + 1] = { e = e, t = p and p.t or 0 }
-    end
+    list[#list + 1] = { e = e, t = p and p.t or 0 }
   end
   table.sort(list, function(a, b) return a.t < b.t end) -- jamais relevés puis les plus anciens
   for _, x in ipairs(list) do
@@ -166,16 +165,26 @@ function ns.QueueAllChars()
   ns.RefreshPanel()
 end
 
--- Rafraîchissement complet (ouverture de l'HV et bouton « Actualiser ») ----------
+-- Rafraîchissement complet ------------------------------------------------------
+-- force = false (ouverture de l'HV) : les prix relevés il y a moins de 5 min sont ignorés.
+-- force = true (bouton « Actualiser », /lp scan) : tout est relancé.
 -- Ordre : liste de surveillance, sacs, puis le reste du cache du plus ancien au plus récent.
-function ns.QueueRefreshAll()
-  ns.QueueWatch()
-  ns.QueueBags(true)
+function ns.QueueRefreshAll(force)
+  ns.skipped = 0
+  ns.QueueWatch(force)
+  ns.QueueBags(force)
   local known = ns.AllCharItems() -- donne niveau et suffixe pour l'équipement des persos
-  local list = {}
+  local list, seen = {}, {}
   for k, p in pairs(ns.market.prices) do
     local id = tonumber(k:match("^(%d+)"))
-    if id then list[#list + 1] = { id = id, k = k, t = p.t or 0 } end
+    if id and not seen[id] then
+      seen[id] = true
+      if force or not ns.IsFresh(id) then
+        list[#list + 1] = { id = id, k = k, t = p.t or 0 }
+      else
+        ns.skipped = ns.skipped + 1
+      end
+    end
   end
   table.sort(list, function(a, b) return a.t < b.t end)
   for _, x in ipairs(list) do
@@ -186,7 +195,12 @@ function ns.QueueRefreshAll()
     end
     ns.Enqueue(x.id, key) -- dédoublonné par itemID
   end
-  ns.Print("%d recherche(s) en file", ns.QueueSize())
+  if not force and ns.skipped > 0 then
+    ns.Print("%d recherche(s) en file, %d prix récent(s) ignoré(s) (moins de 5 min, « Actualiser » pour forcer)",
+      ns.QueueSize(), ns.skipped)
+  else
+    ns.Print("%d recherche(s) en file", ns.QueueSize())
+  end
   ns.RefreshPanel()
 end
 
@@ -199,7 +213,7 @@ ns.On("AUCTION_HOUSE_SHOW", function()
   -- Un tick plus tard : l'interface de l'HV de Blizzard est alors chargée et affichée.
   C_Timer.After(0, function()
     ns.ShowPanel()
-    ns.QueueRefreshAll()
+    ns.QueueRefreshAll(false)
   end)
 end)
 

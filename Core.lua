@@ -4,7 +4,7 @@ local ADDON, ns = ...
 ns.CUT     = 0.05      -- commission HV de faction
 ns.N_UNITS = 200       -- marchandises : moyenne pondérée sur les N unités les moins chères
 ns.N_ITEMS = 5         -- équipement : médiane des N annonces les moins chères
-ns.STALE   = 15 * 60   -- ne pas rescanner un objet des sacs vu il y a moins de 15 min
+ns.STALE   = 5 * 60    -- rafraîchissement automatique : ignorer un prix relevé il y a moins de 5 min
 ns.TIMEOUT = 5         -- secondes d'attente max d'une réponse de recherche
 
 ns.PREFIX = "|cff33ccffLe Prix|r : "
@@ -43,6 +43,12 @@ end
 function ns.Key(id, suffix)
   if suffix and suffix ~= 0 then return id .. ":" .. suffix end
   return tostring(id)
+end
+
+-- Vrai si le prix de cet objet a été relevé il y a moins de ns.STALE secondes.
+function ns.IsFresh(id)
+  local p = ns.market and ns.market.prices[tostring(id)]
+  return p ~= nil and p.t ~= nil and time() - p.t < ns.STALE
 end
 
 function ns.Net(copper) return math.floor(copper * (1 - ns.CUT)) end
@@ -124,7 +130,7 @@ SlashCmdList.LEPRIX = function(msg)
     if cmd == "add" then ns.WatchAdd(id) else ns.WatchRemove(id) end
   elseif cmd == "scan" then
     if not ns.ahOpen then return ns.Print("ouvre l'HV d'abord") end
-    ns.QueueBags(true)
+    ns.QueueRefreshAll(true)
   elseif cmd == "prix" then
     local id = ns.ParseLink(rest) or tonumber(rest)
     if not id then return ns.Print("usage : /lp prix [lien d'objet ou itemID]") end
@@ -153,6 +159,6 @@ SlashCmdList.LEPRIX = function(msg)
   elseif cmd == "debug" then
     ns.Debug()
   else
-    ns.Print("/lp add|del [lien] · /lp scan (force le scan des sacs) · /lp prix [lien] · /lp persos · /lp oublier Nom · /lp reset · /lp debug")
+    ns.Print("/lp add|del [lien] · /lp scan (comme « Actualiser ») · /lp prix [lien] · /lp persos · /lp oublier Nom · /lp reset · /lp debug")
   end
 end

@@ -24,9 +24,16 @@ function ns.WatchRemove(id)
   ns.RefreshPanel()
 end
 
-function ns.QueueWatch()
+function ns.QueueWatch(force)
   -- Prioritaire sur les sacs : la liste est courte et c'est elle qu'on regarde.
-  for i = #ns.market.watch, 1, -1 do ns.Enqueue(ns.market.watch[i], nil, true) end
+  for i = #ns.market.watch, 1, -1 do
+    local id = ns.market.watch[i]
+    if force or not ns.IsFresh(id) then
+      ns.Enqueue(id, nil, true)
+    else
+      ns.skipped = (ns.skipped or 0) + 1
+    end
+  end
 end
 
 -- Interface ---------------------------------------------------------------------
@@ -137,11 +144,11 @@ function ns.CreatePanel()
   refresh:SetSize(80, 20)
   refresh:SetPoint("TOPRIGHT", -10, -30)
   refresh:SetText("Actualiser")
-  refresh:SetScript("OnClick", function() ns.QueueRefreshAll() end)
+  refresh:SetScript("OnClick", function() ns.QueueRefreshAll(true) end)
   refresh:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
     GameTooltip:AddLine("Rafraîchir tous les prix en cache")
-    GameTooltip:AddLine("Liste de surveillance, puis sacs, puis le reste du cache du plus ancien au plus récent.", 1, 1, 1, true)
+    GameTooltip:AddLine("Relance tout, même les prix relevés il y a moins de 5 min. Ordre : liste de surveillance, sacs, puis le reste du cache.", 1, 1, 1, true)
     GameTooltip:Show()
   end)
   refresh:SetScript("OnLeave", GameTooltip_Hide)

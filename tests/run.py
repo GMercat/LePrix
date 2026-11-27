@@ -219,10 +219,28 @@ def main():
         if ns.QueueSize() == 0: break
         G.TIMERS[len(G.TIMERS)].fn()
     sent = list(G.SENT.values())[n0:]
-    assert sent[0] == 4306 and {2772, 15211} <= set(sent) and len(sent) == len(set(sent)), sent
+    # 2772 relevé à l'instant -> ignoré ; 15211 relevé il y a plus d'1 h -> relancé
+    assert sent[0] == 4306 and 15211 in sent and 2772 not in sent and len(sent) == len(set(sent)), sent
+    assert any("ignoré" in l for l in G.PRINTS.values())
+    # 4 min plus tard : toujours frais ; 6 min plus tard : relancé automatiquement
+    fire("AUCTION_HOUSE_CLOSED")
+    G.NOW = G.NOW + 4 * 60
+    n1 = len(G.SENT); fire("AUCTION_HOUSE_SHOW")
+    for _ in range(20):
+        if ns.QueueSize() == 0: break
+        G.TIMERS[len(G.TIMERS)].fn()
+    assert 2772 not in list(G.SENT.values())[n1:]
+    fire("AUCTION_HOUSE_CLOSED")
+    G.NOW = G.NOW + 2 * 60
+    n1 = len(G.SENT); fire("AUCTION_HOUSE_SHOW")
+    for _ in range(20):
+        if ns.QueueSize() == 0: break
+        G.TIMERS[len(G.TIMERS)].fn()
+    assert 2772 in list(G.SENT.values())[n1:]
     # Bouton Actualiser sans fermer : même chose
     n0 = len(G.SENT)
-    ns.QueueRefreshAll()
+    ns.Store("2772", 110, 165, 200)  # prix tout frais
+    ns.QueueRefreshAll(true)         # bouton Actualiser : relance quand même
     for _ in range(20):
         if ns.QueueSize() == 0: break
         G.TIMERS[len(G.TIMERS)].fn()
