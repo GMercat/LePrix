@@ -131,6 +131,8 @@ SlashCmdList.LEPRIX = function(msg)
   elseif cmd == "scan" then
     if not ns.ahOpen then return ns.Print("ouvre l'HV d'abord") end
     ns.QueueRefreshAll(true)
+  elseif cmd == "liste" then
+    ns.RefreshWatchOnly()
   elseif cmd == "prix" then
     local id = ns.ParseLink(rest) or tonumber(rest)
     if not id then return ns.Print("usage : /lp prix [lien d'objet ou itemID]") end
@@ -159,6 +161,6 @@ SlashCmdList.LEPRIX = function(msg)
   elseif cmd == "debug" then
     ns.Debug()
   else
-    ns.Print("/lp add|del [lien] · /lp scan (comme « Actualiser ») · /lp prix [lien] · /lp persos · /lp oublier Nom · /lp reset · /lp debug")
+    ns.Print("/lp add|del [lien] · /lp scan (comme « Actualiser ») · /lp liste · /lp prix [lien] · /lp persos · /lp oublier Nom · /lp reset · /lp debug")
   end
 end

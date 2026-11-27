@@ -24,6 +24,14 @@ function ns.WatchRemove(id)
   ns.RefreshPanel()
 end
 
+-- Bouton « Liste » / /lp liste : uniquement la liste de surveillance, forcée.
+function ns.RefreshWatchOnly()
+  if not ns.ahOpen then return ns.Print("ouvre l'HV d'abord") end
+  ns.QueueWatch(true)
+  ns.Print("%d recherche(s) en file", ns.QueueSize())
+  ns.RefreshPanel()
+end
+
 function ns.QueueWatch(force)
   -- Prioritaire sur les sacs : la liste est courte et c'est elle qu'on regarde.
   for i = #ns.market.watch, 1, -1 do
@@ -165,6 +173,19 @@ function ns.CreatePanel()
     GameTooltip:Show()
   end)
   chars:SetScript("OnLeave", GameTooltip_Hide)
+
+  local watchBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+  watchBtn:SetSize(60, 20)
+  watchBtn:SetPoint("RIGHT", chars, "LEFT", -4, 0)
+  watchBtn:SetText("Liste")
+  watchBtn:SetScript("OnClick", function() ns.RefreshWatchOnly() end)
+  watchBtn:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:AddLine("Rafraîchir la liste de surveillance")
+    GameTooltip:AddLine("Relance uniquement les objets de la liste, même relevés il y a moins de 5 min.", 1, 1, 1, true)
+    GameTooltip:Show()
+  end)
+  watchBtn:SetScript("OnLeave", GameTooltip_Hide)
 
   -- Liste dans l'encart, avec un rappel tant qu'elle est vide.
   local scroll = CreateFrame("ScrollFrame", nil, inset, "UIPanelScrollFrameTemplate")

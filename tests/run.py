@@ -245,6 +245,13 @@ def main():
         if ns.QueueSize() == 0: break
         G.TIMERS[len(G.TIMERS)].fn()
     assert {4306, 2772, 15211} <= set(list(G.SENT.values())[n0:])
+    # Bouton Liste : uniquement la liste de surveillance, même si elle est fraîche
+    n0 = len(G.SENT)
+    ns.RefreshWatchOnly()
+    for _ in range(20):
+        if ns.QueueSize() == 0: break
+        G.TIMERS[len(G.TIMERS)].fn()
+    assert list(G.SENT.values())[n0:] == [4306], list(G.SENT.values())[n0:]
     fire("AUCTION_HOUSE_CLOSED")
     G.SlashCmdList.LEPRIX("debug")
     print("\n".join(list(G.PRINTS.values())[-6:]))

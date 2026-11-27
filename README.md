@@ -5,7 +5,7 @@ Addon pour **World of Warcraft: Forever** qui affiche dans les infobulles le pri
 ## Fonctionnalités
 
 - **Prix dans les infobulles** : une ligne « LePrix HV » avec la valeur de marché nette de la commission de 5 %, pour toute la pile survolée. L'âge du relevé est affiché en dessous. Le dépôt n'est pas déduit : il est rendu si l'objet se vend.
-- **Rafraîchissement à l'ouverture de l'HV** : liste de surveillance, puis objets vendables des sacs, puis tout le reste du cache, du relevé le plus ancien au plus récent. Les prix relevés il y a moins de 5 minutes sont ignorés. Le bouton « Actualiser » (ou `/lp scan`) relance tout, sans exception. Fermer l'HV arrête la file.
+- **Rafraîchissement à l'ouverture de l'HV** : liste de surveillance, puis objets vendables des sacs, puis tout le reste du cache, du relevé le plus ancien au plus récent. Les prix relevés il y a moins de 5 minutes sont ignorés. Le bouton « Actualiser » (ou `/lp scan`) relance tout, sans exception, et le bouton « Liste » (ou `/lp liste`) uniquement la liste de surveillance. Fermer l'HV arrête la file.
 - **Cache des prix** partagé entre tous les personnages du compte de jeu, séparé par région et faction.
 - **Liste de surveillance** dans un panneau à droite de l'HV : glisse un objet dedans pour l'ajouter. Le panneau affiche la valeur, l'évolution depuis le relevé précédent et la date.
 - **Bouton « Mes persos »** : scanne les objets (sacs et banque) de tous tes personnages de la faction, tels qu'enregistrés à leur dernière connexion.
@@ -36,6 +36,7 @@ Si l'addon apparaît comme « périmé » ou « incompatible » après un patch,
 |---|---|
 | `/lp add [lien]` · `/lp del [lien]` | Ajoute ou retire un objet de la liste de surveillance |
 | `/lp scan` | Relance la recherche de tous les prix, comme le bouton « Actualiser » (HV ouvert) |
+| `/lp liste` | Relance uniquement la liste de surveillance, comme le bouton « Liste » (HV ouvert) |
 | `/lp prix [lien]` | Affiche le prix en cache et, HV ouvert, relance la recherche en montrant les résultats bruts |
 | `/lp persos` | Liste les personnages enregistrés et la date de leurs sacs et banque |
 | `/lp oublier Nom` | Retire un personnage |
