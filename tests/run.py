@@ -240,7 +240,7 @@ def main():
     # Bouton Actualiser sans fermer : même chose
     n0 = len(G.SENT)
     ns.Store("2772", 110, 165, 200)  # prix tout frais
-    ns.QueueRefreshAll(true)         # bouton Actualiser : relance quand même
+    ns.QueueRefreshAll(True)         # bouton Actualiser : relance quand même
     for _ in range(20):
         if ns.QueueSize() == 0: break
         G.TIMERS[len(G.TIMERS)].fn()
